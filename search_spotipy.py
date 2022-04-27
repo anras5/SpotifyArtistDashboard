@@ -1,7 +1,9 @@
+import pandas as pd
 from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy
 from dotenv import load_dotenv
 import os
+import pandas
 
 load_dotenv()
 
@@ -21,18 +23,19 @@ def get_artist_info(name: str) -> dict:
             'type': search_result['type']}
 
 
-def get_artist_albums(artist_id: str) -> dict:
+def get_artist_albums(artist_id: str) -> pd.DataFrame:
     search_result = sp.artist_albums(artist_id)['items']
-    info = []
+    albums = pd.DataFrame(columns=['name', 'id', 'release_date', 'total_tracks', 'image'])
     for album in search_result:
-        info.append({'name': album['name'],
-                     'id': album['id'],
-                     'release_date': album['release_date'],
-                     'total_tracks': album['total_tracks'],
-                     'image': album['images'][0]['url'],
-                     # 'markets': album['available_markets']
-                     })
-    return info
+        albums = pd.concat([albums, pd.DataFrame([{'name': album['name'],
+                                                   'id': album['id'],
+                                                   'release_date': album['release_date'],
+                                                   'total_tracks': album['total_tracks'],
+                                                   'image': album['images'][0]['url'],
+                                                   # 'markets': album['available_markets']
+                                                   }])])
+    albums.drop_duplicates(subset=['name'], inplace=True)
+    return albums
 
 
 def get_album_tracks(album_id: str) -> dict:
@@ -48,13 +51,13 @@ def get_album_tracks(album_id: str) -> dict:
                      'energy': song_features['energy'],
                      'loudness': song_features['loudness'],
                      'speechiness': song_features['speechiness'],
-                     'acousticness': song_features['acouticness'],
+                     'acousticness': song_features['acousticness'],
                      'instrumentalness': song_features['instrumentalness'],
                      'liveness': song_features['liveness'],
                      'tempo': song_features['tempo']
                      })
+    return info
 
 
 if __name__ == '__main__':
-    search = sp.audio_features('spotify:track:2gVhfX2Gy1T9kDuS9azrF7')
-    print(search)
+    print(get_artist_albums('https://open.spotify.com/artist/3fMbdgg4jU18AjLCKBhRSm?si=29NwyusVTwuF7qwxWQDf6w'))
