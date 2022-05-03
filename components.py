@@ -43,9 +43,44 @@ navbar = dbc.Navbar(
     dark=True,
 )
 
-dropdown_albums = dcc.Dropdown(id="dropdown-albums")
+main_layout = dbc.Container([
 
-table_songs = dbc.Container(
-    id='table-songs',
-    children=[]
-)
+    dbc.Row([
+
+        # artist panel
+        dbc.Col([
+
+            dbc.Row(html.H3("Choose your favorite artist",
+                            id='chosen-artist',
+                            className='text-center')),
+
+            dbc.Row(html.Div("Genres",
+                             id='genres-artist',
+                             className='text-center')),
+
+            dbc.Row(html.Img(
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/2048px"
+                    "-Spotify_logo_without_text.svg.png",
+                id='photo-artist',
+                className='img-fluid')),
+
+        ],
+            lg=4, md=12, sm=12),
+
+        # Album choosing panel + datatable
+        dbc.Col([
+
+            dbc.Row(dcc.Dropdown(id="dropdown-albums",
+                                 className="my-4")),
+
+            dbc.Row(dbc.Container(id='table-songs',
+                                  children=[],
+                                  className="mx-4 my-1 justify-content-center"))
+
+        ],
+            lg=8, md=12, sm=12,
+            class_name='my-2')
+
+    ],
+        class_name='mx-4 my-4')
+])

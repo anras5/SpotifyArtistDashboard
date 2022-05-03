@@ -38,25 +38,28 @@ def get_artist_albums(artist_id: str) -> pd.DataFrame:
     return albums
 
 
-def get_album_tracks(album_id: str) -> dict:
+def get_album_tracks(album_id: str) -> pd.DataFrame:
     search_result = sp.album_tracks(album_id)['items']
-    info = []
+    songs = pd.DataFrame(columns=['name', 'id', 'duration_ms',
+                                  'danceability', 'energy', 'loudness',
+                                  'speechiness', 'acousticness', 'instrumentalness',
+                                  'liveness', 'tempo'])
     for song in search_result:
         song_features = sp.audio_features(song['id'])[0]
-        info.append({'name': song['name'],
-                     'id': song['id'],
-                     'disc_number': song['disc_number'],
-                     'duration_ms': song['duration_ms'],
-                     'danceability': song_features['danceability'],
-                     'energy': song_features['energy'],
-                     'loudness': song_features['loudness'],
-                     'speechiness': song_features['speechiness'],
-                     'acousticness': song_features['acousticness'],
-                     'instrumentalness': song_features['instrumentalness'],
-                     'liveness': song_features['liveness'],
-                     'tempo': song_features['tempo']
-                     })
-    return info
+        songs = pd.concat([songs, pd.DataFrame([{'name': song['name'],
+                                                 'id': song['id'],
+                                                 'disc_number': song['disc_number'],
+                                                 'duration_ms': song['duration_ms'],
+                                                 'danceability': song_features['danceability'],
+                                                 'energy': song_features['energy'],
+                                                 'loudness': song_features['loudness'],
+                                                 'speechiness': song_features['speechiness'],
+                                                 'acousticness': song_features['acousticness'],
+                                                 'instrumentalness': song_features['instrumentalness'],
+                                                 'liveness': song_features['liveness'],
+                                                 'tempo': song_features['tempo']
+                                                 }])])
+    return songs
 
 
 if __name__ == '__main__':
