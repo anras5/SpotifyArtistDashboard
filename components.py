@@ -58,11 +58,16 @@ main_layout = dbc.Container([
                              id='genres-artist',
                              className='text-center')),
 
+            dbc.Row(html.Div("Followers",
+                             id='followers-artist',
+                             className='text-center')),
+
             dbc.Row(html.Img(
                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/2048px"
                     "-Spotify_logo_without_text.svg.png",
                 id='photo-artist',
-                className='img-fluid')),
+                className='img-fluid'),
+                class_name='mx-5 my-5'),
 
         ],
             lg=4, md=12, sm=12),
@@ -70,12 +75,13 @@ main_layout = dbc.Container([
         # Album choosing panel + datatable
         dbc.Col([
 
-            dbc.Row(dcc.Dropdown(id="dropdown-albums",
-                                 className="my-4")),
+            dbc.Row(dcc.Dropdown(id="dropdown-albums"),
+                    class_name='px-1 my-3'),
 
             dbc.Row(dbc.Container(id='table-songs',
                                   children=[],
-                                  className="mx-4 my-1 justify-content-center"))
+                                  className="my-1 justify-content-center"),
+                    class_name='px-1 my-3')
 
         ],
             lg=8, md=12, sm=12,

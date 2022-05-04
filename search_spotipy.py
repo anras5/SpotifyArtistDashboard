@@ -49,7 +49,7 @@ def get_album_tracks(album_id: str) -> pd.DataFrame:
         songs = pd.concat([songs, pd.DataFrame([{'name': song['name'],
                                                  'id': song['id'],
                                                  'disc_number': song['disc_number'],
-                                                 'duration_ms': song['duration_ms'],
+                                                 'duration_s': round(song['duration_ms']/1000, 0),
                                                  'danceability': song_features['danceability'],
                                                  'energy': song_features['energy'],
                                                  'loudness': song_features['loudness'],
