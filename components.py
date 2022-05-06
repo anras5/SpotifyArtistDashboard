@@ -1,5 +1,5 @@
 import dash_bootstrap_components as dbc
-from dash import dcc, html
+from dash import dcc, html, dash_table
 
 search_bar = dbc.Row(
     [
@@ -79,7 +79,7 @@ main_layout = dbc.Container([
                     class_name='px-1 my-3'),
 
             dbc.Row(dbc.Container(id='table-songs',
-                                  children=[],
+                                  children=[dash_table.DataTable(id='datatable')],
                                   className="my-1 justify-content-center"),
                     class_name='px-1 my-3')
 
@@ -89,4 +89,43 @@ main_layout = dbc.Container([
 
     ],
         class_name='mx-4 my-4')
+])
+
+
+graph_layout = dbc.Container([
+
+    # First row
+    dbc.Row([
+
+        # BAR-PLOT
+        dbc.Col([
+            dcc.Dropdown(id='dropdown-bar-plot', options=['duration', 'danceability', 'energy']),
+            dcc.Graph(id='bar-plot', figure={})
+            ],
+            lg=6, md=12, sm=12
+        ),
+
+
+        # SCATTER-PLOT
+        dbc.Col(
+            dcc.Graph(id='scatter-plot', figure={}),
+            lg=6, md=12, sm=12
+        )
+
+    ]),
+
+
+    # Second row
+    dbc.Row([
+
+        # BOX-PLOT
+        dbc.Col(
+            dcc.Graph(id='box-plot', figure={}),
+            lg=12
+        )
+
+    ])
+
+
+
 ])

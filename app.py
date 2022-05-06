@@ -1,8 +1,10 @@
+import pandas as pd
+import datetime as dt
 from dash import Dash, dcc, html, Input, Output, State, dash_table
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import search_spotipy
-from components import navbar, main_layout
+from components import navbar, main_layout, graph_layout
 from dash.exceptions import PreventUpdate
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], meta_tags=[
@@ -87,10 +89,41 @@ def show_songs(album_name, artist_name):
                                 )
 
 
+@app.callback(
+    Output('bar-plot', 'figure'),
+    [Input('dropdown-bar-plot', 'value'),
+     Input('datatable', 'derived_virtual_data')]
+)
+def create_bar_plot(value, data):
+    if not value or not data:
+        raise PreventUpdate
+    dff = pd.DataFrame(data)[[value, 'name']]
+    dff.reset_index(inplace=True)
+    if value == 'duration':
+        dfff = dff['duration'].str.split(':', expand=True)
+        dff['time'] = dfff[0].astype(int) * 60 + dfff[1].astype(int)
+        max_time = dff['time'].max()
+        ticktexts = []
+        for i in range(0, max_time + 30, 30):
+            minutes, seconds = tuple(map(str, divmod(i, 60)))
+            if len(seconds) == 1:
+                seconds = '0' + seconds
+            ticktexts.append(f'{minutes}:{seconds}')
+        fig_bar = px.bar(dff, x=dff['index'], y=dff['time'],
+                         hover_data={'index': False, 'time': False, 'duration': True, 'name': True})
+        fig_bar.update_xaxes(title='Number of song on album')
+        fig_bar.update_yaxes(tickmode='array', tickvals=list(range(0, max_time + 30, 30)), ticktext=ticktexts, dtick=30)
+        return fig_bar
+    else:
+        fig_bar = px.bar(dff, x=dff.index, y=dff[value])
+        return fig_bar
+
+
 app.layout = html.Div([
 
     navbar,
     main_layout,
+    graph_layout
 
 ])
 
