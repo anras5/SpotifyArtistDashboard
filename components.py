@@ -1,6 +1,13 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html, dash_table
 
+SCATTER_OPTIONS = ['danceability', 'energy', 'loudness',
+                   'speechiness', 'acousticness', 'instrumentalness',
+                   'liveness', 'tempo']
+BAR_OPTIONS = ['duration', 'danceability', 'energy']
+
+
+
 search_bar = dbc.Row(
     [
         dbc.Col(dbc.Input(id="input-artist", type="search", placeholder="Search")),
@@ -62,6 +69,10 @@ main_layout = dbc.Container([
                              id='followers-artist',
                              className='text-center')),
 
+            dbc.Row(html.Div("ID",
+                             id='id-artist',
+                             className='text-center')),
+
             dbc.Row(html.Img(
                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/2048px"
                     "-Spotify_logo_without_text.svg.png",
@@ -91,7 +102,6 @@ main_layout = dbc.Container([
         class_name='mx-4 my-4')
 ])
 
-
 graph_layout = dbc.Container([
 
     # First row
@@ -99,33 +109,35 @@ graph_layout = dbc.Container([
 
         # BAR-PLOT
         dbc.Col([
-            dcc.Dropdown(id='dropdown-bar-plot', options=['duration', 'danceability', 'energy']),
+            dcc.Dropdown(id='dropdown-bar-plot', options=BAR_OPTIONS),
             dcc.Graph(id='bar-plot', figure={})
-            ],
+        ],
             lg=6, md=12, sm=12
         ),
 
-
         # SCATTER-PLOT
-        dbc.Col(
-            dcc.Graph(id='scatter-plot', figure={}),
+        dbc.Col([
+            dbc.Row([
+                dbc.Col(dcc.Dropdown(id='dropdown-scatter-first', options=SCATTER_OPTIONS)),
+                dbc.Col(dcc.Dropdown(id='dropdown-scatter-second', options=SCATTER_OPTIONS))
+            ]),
+            dcc.Graph(id='scatter-plot', figure={})],
             lg=6, md=12, sm=12
         )
 
     ]),
 
-
     # Second row
     dbc.Row([
 
         # BOX-PLOT
-        dbc.Col(
-            dcc.Graph(id='box-plot', figure={}),
+        dbc.Col([
+            dcc.Dropdown(id='dropdown-box', options=[]),
+            dcc.Graph(id='box-plot', figure={})
+        ],
             lg=12
         )
 
     ])
-
-
 
 ])

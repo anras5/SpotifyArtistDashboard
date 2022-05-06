@@ -62,5 +62,6 @@ def get_album_tracks(album_id: str) -> pd.DataFrame:
     return songs
 
 
+
 if __name__ == '__main__':
     print(get_artist_albums('https://open.spotify.com/artist/3fMbdgg4jU18AjLCKBhRSm?si=29NwyusVTwuF7qwxWQDf6w'))
