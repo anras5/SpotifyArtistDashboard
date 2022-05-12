@@ -5,7 +5,7 @@ Spotify Artist Dashboard is a web based interactive dashboard that displays info
 
 ## Features
 
-You can choose your favorite artist and information about them is going to be displayed on the page.
+You can choose your favorite artist and the information about them is going to be displayed on the page.
 
 ## Built with
 
