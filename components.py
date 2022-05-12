@@ -6,8 +6,6 @@ SCATTER_OPTIONS = ['danceability', 'energy', 'loudness',
                    'liveness', 'tempo']
 BAR_OPTIONS = ['duration', 'danceability', 'energy']
 
-
-
 search_bar = dbc.Row(
     [
         dbc.Col(dbc.Input(id="input-artist", type="search", placeholder="Search")),
