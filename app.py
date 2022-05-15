@@ -4,6 +4,7 @@ import dash_bootstrap_components as dbc
 import plotly.express as px
 import search_spotipy
 import plots
+from datatable_enhanced import DataTableEnhanced
 from components import main_layout
 from dash.exceptions import PreventUpdate
 
@@ -59,7 +60,6 @@ def update_datatable(chosen_album_id, artist_name, n_clicks):
 
 
 def clear_datatable():
-    print('clear')
     return dash_table.DataTable(id='datatable', data=[])
 
 
@@ -75,31 +75,17 @@ def show_datatable(chosen_album_id, artist_name):
         lambda x: x if len(x) != 1 else "0" + x)
     table_songs['duration'] = minutes + ":" + seconds
     table_songs.insert(1, 'duration', table_songs.pop('duration'))
-    return dash_table.DataTable(id='datatable',
-                                data=table_songs.to_dict('records'),
-                                columns=[{'name': i, 'id': i} for i in table_songs.columns],
-                                page_size=9,
-                                fixed_columns={'headers': True, 'data': 1},
-                                sort_action='native',
-                                tooltip_data=[
-                                    {
-                                        column: {'value': str(value), 'type': 'markdown'}
-                                        for column, value in row.items()
-                                    } for row in table_songs.to_dict('records')
-                                ],
-                                tooltip_duration=None,
-                                style_table={'minWidth': '100%'},
-                                style_cell={'overflow': 'hidden',
-                                            'minWidth': '9.25rem', 'width': '9.25rem', 'maxWidth': '9.25rem',
-                                            'textOverflow': 'ellipsis',
-                                            'textAlign': 'right',
-                                            },
-                                style_cell_conditional=[{'if': {'column_id': 'name'},
-                                                         'textAlign': 'left',
-                                                         'minWidth': '11.25rem',
-                                                         'width': '11.25rem',
-                                                         'maxWidth': '11.25rem'}]
-                                )
+    return DataTableEnhanced(_id='datatable',
+                             data=table_songs.to_dict('records'),
+
+                             columns=[{'name': i, 'id': i} for i in table_songs.columns],
+                             tooltip_data=
+                             [
+                                 {column: {'value': str(value), 'type': 'markdown'}
+                                  for column, value in row.items()
+                                  } for row in table_songs.to_dict('records')
+                             ],
+                             )
 
 
 @app.callback(
