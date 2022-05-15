@@ -1,9 +1,10 @@
 import pandas as pd
-from dash import Dash, dcc, html, Input, Output, State, dash_table
+from dash import Dash, dcc, html, Input, Output, State, dash_table, callback_context
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import search_spotipy
-from components import navbar, main_layout, graph_layout
+import plots
+from components import main_layout
 from dash.exceptions import PreventUpdate
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], meta_tags=[
@@ -22,14 +23,15 @@ def toggle_navbar_collapse(n, is_open):
     return is_open
 
 
-@app.callback(Output("dropdown-albums", "options"),
-              Output("chosen-artist", "children"),
-              Output("genres-artist", "children"),
-              Output("followers-artist", "children"),
-              Output("id-artist", "children"),
-              Output("photo-artist", "src"),
-              Input("button-artist", "n_clicks"),
-              State("input-artist", "value"))
+@app.callback(
+    Output("dropdown-albums", "options"),
+    Output("chosen-artist", "children"),
+    Output("genres-artist", "children"),
+    Output("followers-artist", "children"),
+    Output("id-artist", "children"),
+    Output("photo-artist", "src"),
+    Input("button-artist", "n_clicks"),
+    State("input-artist", "value"))
 def show_albums(n_clicks, artist_name):
     if not artist_name:
         raise PreventUpdate
@@ -44,8 +46,24 @@ def show_albums(n_clicks, artist_name):
 
 @app.callback(Output("table-songs", "children"),
               Input("dropdown-albums", "value"),
+              Input("button-artist", "n_clicks"),
               State("chosen-artist", "children"))
-def show_songs(chosen_album_id, artist_name):
+def update_datatable(chosen_album_id, artist_name, n_clicks):
+    if not chosen_album_id or not artist_name:
+        raise PreventUpdate
+    triggered_id = callback_context.triggered[0]['prop_id']
+    if triggered_id == 'button-artist.n_clicks':
+        return clear_datatable()
+    else:
+        return show_datatable(chosen_album_id, artist_name)
+
+
+def clear_datatable():
+    print('clear')
+    return dash_table.DataTable(id='datatable', data=[])
+
+
+def show_datatable(chosen_album_id, artist_name):
     if not chosen_album_id or not artist_name:
         raise PreventUpdate
     songs = search_spotipy.get_album_tracks(chosen_album_id)
@@ -60,7 +78,7 @@ def show_songs(chosen_album_id, artist_name):
     return dash_table.DataTable(id='datatable',
                                 data=table_songs.to_dict('records'),
                                 columns=[{'name': i, 'id': i} for i in table_songs.columns],
-                                page_size=8,
+                                page_size=9,
                                 fixed_columns={'headers': True, 'data': 1},
                                 sort_action='native',
                                 tooltip_data=[
@@ -86,51 +104,36 @@ def show_songs(chosen_album_id, artist_name):
 
 @app.callback(
     Output('bar-plot', 'figure'),
-    [Input('dropdown-bar-plot', 'value'),
-     Input('datatable', 'derived_virtual_data')]
+    Input('dropdown-bar-plot', 'value'),
+    Input('datatable', 'derived_virtual_data'),
+    Input('button-artist', 'n_clicks'),
+    prevent_initial_call=True
 )
-def create_bar_plot(chosen_type, data):
+def update_bar_plot(chosen_type, data, n_clicks):
     if not chosen_type or not data:
         raise PreventUpdate
-    dff = pd.DataFrame(data)[[chosen_type, 'name']]
-    dff.reset_index(inplace=True)
-    if chosen_type == 'duration':
-        dfff = dff['duration'].str.split(':', expand=True)
-        dff['time'] = dfff[0].astype(int) * 60 + dfff[1].astype(int)
-        max_time = dff['time'].max()
-        ticktexts = []
-        for i in range(0, max_time + 30, 30):
-            minutes, seconds = tuple(map(str, divmod(i, 60)))
-            if len(seconds) == 1:
-                seconds = '0' + seconds
-            ticktexts.append(f'{minutes}:{seconds}')
-        fig_bar = px.bar(dff, x=dff['index'], y=dff['time'],
-                         hover_data={'index': False, 'time': False, 'duration': True, 'name': True})
-        fig_bar.update_xaxes(title='Number of song on album')
-        fig_bar.update_yaxes(tickmode='array', tickvals=list(range(0, max_time + 30, 30)), ticktext=ticktexts, dtick=30)
-        return fig_bar
+    triggered_id = callback_context.triggered[0]['prop_id']
+    if triggered_id == 'button-artist.n_clicks':
+        return plots.reset_bar_plot()
     else:
-        fig_bar = px.bar(dff, x=dff['index'], y=dff[chosen_type])
-        return fig_bar
+        return plots.create_bar_plot(chosen_type, data)
 
 
 @app.callback(
     Output('scatter-plot', 'figure'),
-    [Input('dropdown-scatter-first', 'value'),
-     Input('dropdown-scatter-second', 'value'),
-     Input('datatable', 'derived_virtual_data')]
+    Input('dropdown-scatter-first', 'value'),
+    Input('dropdown-scatter-second', 'value'),
+    Input('datatable', 'derived_virtual_data'),
+    Input('button-artist', 'n_clicks')
 )
-def create_scatter_plot(x_axis, y_axis, data):
+def update_scatter_plot(x_axis, y_axis, data, n_clicks):
     if not x_axis or not y_axis or not data:
         raise PreventUpdate
-    if x_axis == y_axis:
-        dff = pd.DataFrame(data)[[x_axis, 'name']]
-        fig_scatter = px.scatter(dff, x=dff[x_axis], y=dff[x_axis], hover_data={'name': True})
-        return fig_scatter
+    triggered_id = callback_context.triggered[0]['prop_id']
+    if triggered_id == 'button-artist.n_clicks':
+        return plots.reset_scatter_plot()
     else:
-        dff = pd.DataFrame(data)[[x_axis, y_axis, 'name']]
-        fig_scatter = px.scatter(dff, x=dff[x_axis], y=dff[y_axis], hover_data={'name': True})
-        return fig_scatter
+        return plots.create_scatter_plot(x_axis, y_axis, data)
 
 
 @app.callback(Output("dropdown-box", "options"),
@@ -148,28 +151,21 @@ def display_not_chosen_albums(chosen_album, artist_id):
 
 @app.callback(
     Output('box-plot', 'figure'),
-    [Input('dropdown-box', 'value'),
-     Input('datatable', 'derived_virtual_data')]
+    Input('dropdown-box', 'value'),
+    Input('datatable', 'derived_virtual_data'),
+    Input('button-artist', 'n_clicks')
 )
-def create_box_plot(compare_album_id, album_1_data):
+def update_box_plot(compare_album_id, album_1_data, n_clicks):
     if not compare_album_id or not album_1_data:
         raise PreventUpdate
-    df_album_1 = pd.DataFrame(album_1_data)
-    df_album_2 = search_spotipy.get_album_tracks(compare_album_id)
-    df_album_1['choose'] = 0
-    df_album_2['choose'] = 1
-    dff = pd.concat([df_album_1, df_album_2])
-    fig_box = px.box(dff, y='energy', color='choose')
-    return fig_box
+    triggered_id = callback_context.triggered[0]['prop_id']
+    if triggered_id == 'button-artist.n_clicks':
+        return plots.reset_box_plot()
+    else:
+        return plots.create_box_plot(compare_album_id, album_1_data)
 
 
-app.layout = html.Div([
-
-    navbar,
-    main_layout,
-    graph_layout
-
-])
+app.layout = main_layout
 
 if __name__ == '__main__':
     app.run_server(debug=True)

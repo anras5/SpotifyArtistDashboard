@@ -6,9 +6,13 @@ SCATTER_OPTIONS = ['danceability', 'energy', 'loudness',
                    'liveness', 'tempo']
 BAR_OPTIONS = ['duration', 'danceability', 'energy']
 
+BACKGROUND_COLOR = "#125B50"
+DROPDOWN_COLOR = "#FAF5E4"
+
+
 search_bar = dbc.Row(
     [
-        dbc.Col(dbc.Input(id="input-artist", type="search", placeholder="Search")),
+        dbc.Col(dbc.Input(id="input-artist", type="search", placeholder="Search for artist")),
         dbc.Col(
             dbc.Button(
                 "Search", id="button-artist", color="primary", className="ms-2", n_clicks=0
@@ -48,14 +52,14 @@ navbar = dbc.Navbar(
     dark=True,
 )
 
-main_layout = dbc.Container([
+artist_info_and_table = dbc.Container([
 
     dbc.Row([
 
         # artist panel
         dbc.Col([
 
-            dbc.Row(html.H3("Choose your favorite artist",
+            dbc.Row(html.H3("Use search bar to choose your favorite artist",
                             id='chosen-artist',
                             className='text-center')),
 
@@ -84,7 +88,7 @@ main_layout = dbc.Container([
         # Album choosing panel + datatable
         dbc.Col([
 
-            dbc.Row(dcc.Dropdown(id="dropdown-albums"),
+            dbc.Row(dcc.Dropdown(id="dropdown-albums", placeholder="Choose album"),
                     class_name='px-1 my-3'),
 
             dbc.Row(dbc.Container(id='table-songs',
@@ -107,6 +111,9 @@ graph_layout = dbc.Container([
 
         # BAR-PLOT
         dbc.Col([
+            html.Div("Choose feature for the bar chart",
+                     id='bar-plot-description',
+                     className='text-center'),
             dcc.Dropdown(id='dropdown-bar-plot', options=BAR_OPTIONS),
             dcc.Graph(id='bar-plot', figure={})
         ],
@@ -115,6 +122,9 @@ graph_layout = dbc.Container([
 
         # SCATTER-PLOT
         dbc.Col([
+            html.Div("Choose features for the scatter plot",
+                     id='scatter-plot-description',
+                     className='text-center'),
             dbc.Row([
                 dbc.Col(dcc.Dropdown(id='dropdown-scatter-first', options=SCATTER_OPTIONS)),
                 dbc.Col(dcc.Dropdown(id='dropdown-scatter-second', options=SCATTER_OPTIONS))
@@ -130,6 +140,9 @@ graph_layout = dbc.Container([
 
         # BOX-PLOT
         dbc.Col([
+            html.Div("Choose album and feature to compare on the box plot",
+                     id='box-plot-description',
+                     className='text-center'),
             dcc.Dropdown(id='dropdown-box', options=[]),
             dcc.Graph(id='box-plot', figure={})
         ],
@@ -139,3 +152,12 @@ graph_layout = dbc.Container([
     ])
 
 ])
+
+main_layout = html.Div(
+    [
+        navbar,
+        artist_info_and_table,
+        graph_layout
+    ],
+)
+
